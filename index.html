@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#000000">
   <title>TotallyNotSpyware12</title>
   <script>try{var t=localStorage.getItem("tns12.theme");if(t==="ellekit"||t==="dopamine")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <meta name="color-scheme" content="dark">
   <link rel="stylesheet" href="style.css"/>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/favicon.ico"/>
@@ -25,14 +26,23 @@
   <script>
   var PREVIEW = /[?&]preview/.test(location.search); // UI test on any device: runs the animation, never calls pwn()
   function $(id){return document.getElementById(id)}
+  var BG_SRC = {dopamine:"assets/bg-dopamine.jpg", ellekit:"assets/bg-ellekit.jpg"};
+  function applyBg(){ var t=document.documentElement.getAttribute("data-theme")||"dopamine"; $("bg").src = BG_SRC[t] || BG_SRC.dopamine; }
   // pwn.js may call log(). Kept empty on purpose so the exploit never races DOM work. Set window.LIVE_LOG=true to try the lyrics log.
   function log(msg){ if(window.LIVE_LOG) showLog(String(msg)); }
-  var logN = 0;
+  var logN = 0, LOG_LINE=40;
   function showLog(t){
-    var l=$("log"), d=document.createElement("div"), c=l.children;
+    var outer=$("log"), l=$("logInner"), d=document.createElement("div"), c=l.children;
     d.textContent=t; if(c.length) c[c.length-1].className="done";
     l.appendChild(d); logN++;
-    l.style.webkitTransform=l.style.transform="translateY("+(-40*(logN-1))+"px)";
+    // #logInner is top-anchored and grows downward as lines are added; this shift keeps the
+    // newest line parked near the bottom of the #log window while older ones drift up and
+    // out through the top (faded by the mask, then clipped by #log's overflow:hidden).
+    // Measuring the real height (instead of a fixed guess) means however many lines actually
+    // fit before reaching the "Jailbreaking" title is exactly how many show before fading.
+    var winH = outer.clientHeight || 200;
+    var y = (winH-LOG_LINE) - LOG_LINE*(logN-1);
+    l.style.webkitTransform=l.style.transform="translateY("+y+"px)";
   }
   function setBtn(text, bad){ var b=$("jbButton"); b.textContent=text; b.className = bad ? "tile bad" : "tile"; }
   window.addEventListener("DOMContentLoaded", function(){
@@ -42,69 +52,84 @@
       a=document.createElement("i"); a.style.left=(i*3)+"px"; a.style.webkitAnimationDelay=a.style.animationDelay=(i*0.1)+"s"; h.appendChild(a);
     }
     var ua=navigator.userAgent, testMode=false;
-    try{ testMode = localStorage.getItem("tns12.test")==="1"; }catch(e){}
+    try{ testMode = sessionStorage.getItem("tns12.test")==="1"; }catch(e){}
     var supported = (/iPhone|iPad|iPod/.test(ua) && /OS 12_/.test(ua)) || PREVIEW || testMode;
     var btn=$("jbButton");
     if(!supported){ setBtn("Unsupported", true); btn.disabled=true; }
     else { setBtn("Jailbreak"); btn.disabled=false; }
-    markTheme(); markTest();
+    applyBg(); markTheme(); markTest();
   });
   function markTest(){
-    var on=false; try{ on = localStorage.getItem("tns12.test")==="1"; }catch(e){}
+    var on=false; try{ on = sessionStorage.getItem("tns12.test")==="1"; }catch(e){}
     var s=$("testSwitch"); if(s) s.className = "sw" + (on?" on":"");
   }
   function toggleTest(){
-    var on=false; try{ on = localStorage.getItem("tns12.test")==="1"; }catch(e){}
+    var on=false; try{ on = sessionStorage.getItem("tns12.test")==="1"; }catch(e){}
     on = !on;
-    try{ localStorage.setItem("tns12.test", on?"1":"0"); }catch(e){}
+    try{ sessionStorage.setItem("tns12.test", on?"1":"0"); }catch(e){}
     markTest();
-    if(on){ var btn=$("jbButton"); if(btn.className.indexOf("bad")===-1 || true){ setBtn("Re-Jailbreak!"); btn.disabled=false; } }
+    if(on){ setBtn("Jailbreak"); $("jbButton").disabled=false; }
   }
   function expand(){
-    var p=$("panel"), r=$("jbButton").getBoundingClientRect(), q=p.getBoundingClientRect();
+    var p=$("panel");
     p.style.transition="none";
-    p.style.webkitTransform=p.style.transform="translate("+(r.left-q.left)+"px,"+(r.top-q.top)+"px) scale("+(r.width/q.width)+","+(r.height/q.height)+")";
+    p.style.webkitTransform=p.style.transform="scale(.05)"; // grows from its own center, not from the button's corner
     p.offsetWidth; p.style.transition="";
     p.className="tile go"; document.body.className="run";
     p.style.webkitTransform=p.style.transform="none";
   }
-  function collapse(){ $("panel").className="tile"; document.body.className=""; $("log").innerHTML=""; logN=0; $("log").style.webkitTransform=$("log").style.transform=""; }
+  function collapse(){ $("panel").className="tile"; document.body.className=""; $("logInner").innerHTML=""; logN=0; $("logInner").style.webkitTransform=$("logInner").style.transform=""; }
   var BYPASS_TYPES = ["AMFI","PAC","KTRR","KPP","PPL","KPF","APRR","AMCC","PAN","PXN","ASLR","OPA"]; // decorative only, from Dopamine's own simulateJailbreak demo
   function rejb(){
     var btn=$("jbButton"), testMode=false;
-    try{ testMode = localStorage.getItem("tns12.test")==="1"; }catch(e){}
+    try{ testMode = sessionStorage.getItem("tns12.test")==="1"; }catch(e){}
     setBtn("Jailbreaking..."); btn.disabled=true;
     expand();
     var failTimer = setTimeout(failJailbreak, 6500);
-    setTimeout(function(){ if(!PREVIEW && !testMode) pwn(); }, 100);
-    runFakeLog(failTimer);
+    // Show a few quick fake lines BEFORE the real exploit runs, so they're on screen
+    // before anything can block the main thread. The last one ("Patchfinding") stays
+    // showing while the real work (pwn) happens — on a real device that step genuinely
+    // freezes the page for a while, which now looks like it's really loading on it.
+    runIntro(function(){
+      raf2(function(){
+        if(!PREVIEW && !testMode){ try{ pwn(); }catch(e){} }
+        runOutro(failTimer);
+      });
+    });
   }
-  function runFakeLog(failTimer){
+  function raf2(cb){ // two paint ticks, so the last intro line is actually on screen before we block
+    if(window.requestAnimationFrame) requestAnimationFrame(function(){ requestAnimationFrame(cb); });
+    else setTimeout(cb, 32);
+  }
+  function runIntro(done){
     function wait(ms,cb){ setTimeout(cb, ms); }
-    wait(200,function(){ showLog("Launching kexploitd");
-    wait(500,function(){ showLog("Launching oobPCI");
-    wait(150,function(){ showLog("Gaining r/w");
-    wait(800,function(){ showLog("Patchfinding");
-      var n=0, max=4+Math.floor(Math.random()*3);
-      (function nextBypass(){
-        if(n>=max){
-          wait(350,function(){
-            showLog("Rebooting Userspace");
-            wait(600,function(){ clearTimeout(failTimer); finishJailbreak(); });
-          });
-          return;
-        }
-        n++;
-        wait(150+Math.random()*450,function(){
-          showLog("Bypassing "+BYPASS_TYPES[Math.floor(Math.random()*BYPASS_TYPES.length)]);
-          nextBypass();
+    showLog("Launching kexploitd");
+    wait(180,function(){ showLog("Gaining r/w");
+    wait(220,function(){ showLog("Patchfinding");
+      wait(120, done);
+    });});
+  }
+  function runOutro(failTimer){
+    function wait(ms,cb){ setTimeout(cb, ms); }
+    var n=0, max=4+Math.floor(Math.random()*3);
+    (function nextBypass(){
+      if(n>=max){
+        wait(350,function(){
+          showLog("Rebooting Userspace");
+          wait(600,function(){ clearTimeout(failTimer); finishJailbreak(); });
         });
-      })();
-    });});});});
+        return;
+      }
+      n++;
+      wait(150+Math.random()*450,function(){
+        showLog("Bypassing "+BYPASS_TYPES[Math.floor(Math.random()*BYPASS_TYPES.length)]);
+        nextBypass();
+      });
+    })();
   }
   function finishJailbreak(){
     showLog("Done");
-    $("log").lastChild.className="done";
+    $("logInner").lastChild.className="done";
     setTimeout(function(){
       setBtn("Jailbroken"); var b=$("jbButton"); b.className="tile ok"; b.disabled=true;
       collapse();
@@ -112,7 +137,7 @@
   }
   function failJailbreak(){
     showLog("Failed");
-    $("log").lastChild.className="fail";
+    $("logInner").lastChild.className="fail";
     setTimeout(function(){
       setBtn("Jailbreak again?", false); $("jbButton").disabled=false;
       collapse();
@@ -133,10 +158,11 @@
   function toggleCredits(){ openSheet("credits"); }
   function toggleTroubleshooting(){ openSheet("troubleshooting"); }
   function toggleSettings(){ openSheet("settings"); }
+  function respringTap(){ document.body.classList.add("flash"); setTimeout(function(){ document.body.classList.remove("flash"); closeSheet(); }, 220); }
   function setTheme(t){
     document.documentElement.setAttribute("data-theme", t);
     try{ localStorage.setItem("tns12.theme", t); }catch(e){}
-    markTheme();
+    applyBg(); markTheme();
   }
   function markTheme(){
     var t=document.documentElement.getAttribute("data-theme"), o=document.querySelectorAll(".opt"), i;
@@ -145,7 +171,7 @@
   </script>
 </head>
 <body>
-  <div id="bg"></div>
+  <img id="bg" src="assets/bg-dopamine.jpg" alt="">
   <div id="app"><div class="stack">
     <div class="header">
       <img src="assets/logo.png" alt="TotallyNotSpyware12">
@@ -160,21 +186,23 @@
     </div>
     <button id="jbButton" class="tile" onclick="rejb()" disabled>JavaScript Disabled</button>
   </div></div>
-  <div class="foot">This is an unofficial modification, use at your own risk.</div>
 
   <div id="panel" class="tile">
-    <div class="title"><div class="helix" id="helix"></div>Jailbreaking</div>
-    <div id="log"></div>
+    <div class="title"><div class="helix" id="helix"></div><span>Jailbreaking</span></div>
+    <div id="log"><div id="logInner"></div></div>
     <div class="note">Keep your device unlocked and powered on.</div>
   </div>
 
   <div id="modal" onclick="closeSheet(event)">
     <section class="sheet" id="settings" hidden>
       <h2>Settings</h2>
+      <div class="label">Themes</div>
       <div class="opt" data-t="dopamine" onclick="setTheme('dopamine')"><span>Dopamine</span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
       <div class="opt" data-t="ellekit" onclick="setTheme('ellekit')"><span>ElleKit</span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+      <div class="label">General</div>
+      <div class="opt" onclick="respringTap()"><img src="assets/icons/respring.png" alt="" class="opt-icon"><span>Respring</span></div>
       <div class="opt" onclick="toggleTest()"><span>Test Jailbreak</span><div class="sw" id="testSwitch"><i></i></div></div>
-      <p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.5)">Unlocks the button and plays the animation on any device, without actually jailbreaking.</p>
+      <p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.5)">Unlocks the button and plays the animation on any device, without actually jailbreaking. Resets when you leave the site.</p>
     </section>
     <section class="sheet" id="credits" hidden>
       <h2>Credits</h2>
@@ -203,6 +231,7 @@
         <li><b>Unable to remove problematic tweaks</b><br>Disable tweak injection by setting the NVRAM <code>boot-args</code> variable to <code>-safe-mode</code> using an SSH RAM disk, or <code>irecovery</code> on a computer with your device in Recovery mode. See the GitHub page for instructions.</li>
         <li><b>JavaScript Disabled</b><br>Go to Settings &gt; Safari &gt; Advanced, and toggle JavaScript on. In a 3rd party browser, enable JavaScript in its settings or use Safari.</li>
         <li><small>If you have a problem not mentioned here, please file a GitHub issue.</small></li>
+        <li><small>This is an unofficial modification, use at your own risk.</small></li>
       </ul>
     </section>
   </div>
