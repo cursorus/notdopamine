@@ -1,7 +1,6 @@
 CACHE MANIFEST
-# v2.0.0: Made by forcequitOS, 2025
-# I did not know this was a thing I could do. So now this should work entirely offline!
-# Someone remind me to update this AppCache file for every update. Thanks.
+# v2.0.1: Corrected PWA launch URL for GitHub Pages
+# Updating this version invalidates the previously cached application shell.
 
 CACHE:
 index.html
