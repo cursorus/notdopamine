@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# v2.0.1: Corrected PWA launch URL for GitHub Pages
+# v2.0.2: Cover the iOS standalone viewport during bounce
 # Updating this version invalidates the previously cached application shell.
 
 CACHE:
