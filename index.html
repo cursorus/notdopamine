@@ -1,123 +1,210 @@
 <!DOCTYPE html>
-<html lang="en" manifest="cache.appcache">
+<html lang="en" manifest="cache.appcache" data-theme="dopamine">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#3249e8">
+  <meta name="theme-color" content="#000000">
   <title>TotallyNotSpyware12</title>
+  <script>try{var t=localStorage.getItem("tns12.theme");if(t==="ellekit"||t==="dopamine")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
   <link rel="stylesheet" href="style.css"/>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/favicon.ico"/>
-  <!-- I legitimately did not know how to declare this as a web app to iOS 12. Shoutout to the original TNS source for that. -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icons/icon-512x512.png">
-  <!-- Open Graph Metadata stuff -->
   <meta property="og:title" content="TotallyNotSpyware12 Re-Jailbreak">
   <meta property="og:description" content="Re-jailbreak A7-A10X iOS 12 devices that have been jailbroken with Chimera.">
   <meta property="og:url" content="https://tns12.forcequit.cc/">
   <meta name="twitter:card" content="TotallyNotSpyware12 Re-Jailbreak">
   <meta name="description" content="Re-jailbreak A7-A10X iOS 12 devices that have been jailbroken with Chimera.">
-  <!-- Inter font stuff -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-  <!-- Scripts. Obviously. -->
   <script src="utils.js"></script>
   <script src="int64.js"></script>
   <script src="stages.js"></script>
   <script src="offsets.js"></script>
   <script src="pwn.js"></script>
   <script>
-  window.addEventListener("DOMContentLoaded", () => {
-    toggleCredits();
-    toggleTroubleshooting();
-    const supported = /iPhone|iPad|iPod/.test(navigator.userAgent) && /OS 12_/.test(navigator.userAgent);
-    const btn = document.getElementById("jbButton");
-    if (!supported) {
-        btn.textContent = "Unsupported";
-        btn.disabled = true;
-    } else {
-        btn.textContent = "Re-Jailbreak!";
-        btn.disabled = false;
+  var PREVIEW = /[?&]preview/.test(location.search); // UI test on any device: runs the animation, never calls pwn()
+  function $(id){return document.getElementById(id)}
+  // pwn.js may call log(). Kept empty on purpose so the exploit never races DOM work. Set window.LIVE_LOG=true to try the lyrics log.
+  function log(msg){ if(window.LIVE_LOG) showLog(String(msg)); }
+  var logN = 0;
+  function showLog(t){
+    var l=$("log"), d=document.createElement("div"), c=l.children;
+    d.textContent=t; if(c.length) c[c.length-1].className="done";
+    l.appendChild(d); logN++;
+    l.style.webkitTransform=l.style.transform="translateY("+(-40*(logN-1))+"px)";
+  }
+  function setBtn(text, bad){ var b=$("jbButton"); b.textContent=text; b.className = bad ? "tile bad" : "tile"; }
+  window.addEventListener("DOMContentLoaded", function(){
+    var h=$("helix"), i, a;
+    for(i=0;i<10;i++){
+      a=document.createElement("i"); a.className="t"; a.style.left=(i*3)+"px"; a.style.webkitAnimationDelay=a.style.animationDelay=(i*0.1)+"s"; h.appendChild(a);
+      a=document.createElement("i"); a.style.left=(i*3)+"px"; a.style.webkitAnimationDelay=a.style.animationDelay=(i*0.1)+"s"; h.appendChild(a);
     }
+    var ua=navigator.userAgent, testMode=false;
+    try{ testMode = localStorage.getItem("tns12.test")==="1"; }catch(e){}
+    var supported = (/iPhone|iPad|iPod/.test(ua) && /OS 12_/.test(ua)) || PREVIEW || testMode;
+    var btn=$("jbButton");
+    if(!supported){ setBtn("Unsupported", true); btn.disabled=true; }
+    else { setBtn("Jailbreak"); btn.disabled=false; }
+    markTheme(); markTest();
   });
-    function log(msg) {}
-    function rejb() {
-      const btn = document.getElementById("jbButton");
-      btn.textContent = "Jailbreaking...";
-      btn.disabled = true;
-      setTimeout(() => {
-        btn.textContent = "Failed, retry?";
-        btn.disabled = false;
-      }, 6500);
-      setTimeout(() => {
-         pwn();
-      }, 100);
-    }
-    function toggleCredits() {
-      const list = document.getElementById("creditsList");
-      list.classList.toggle("expanded");
-      updateHeaderCompression();
-    }
-    function toggleTroubleshooting() {
-      const list = document.getElementById("troubleshootingList");
-      list.classList.toggle("expanded");
-      updateHeaderCompression();
-    }
-    function updateHeaderCompression() {
-      const header = document.querySelector("header");
-      const creditsExpanded = document.getElementById("creditsList").classList.contains("expanded");
-      const troubleshootingExpanded = document.getElementById("troubleshootingList").classList.contains("expanded");
-      
-      if (creditsExpanded || troubleshootingExpanded) {
-          header.classList.add("compressed");
-      } else {
-          header.classList.remove("compressed");
-      }
-    }
+  function markTest(){
+    var on=false; try{ on = localStorage.getItem("tns12.test")==="1"; }catch(e){}
+    var s=$("testSwitch"); if(s) s.className = "sw" + (on?" on":"");
+  }
+  function toggleTest(){
+    var on=false; try{ on = localStorage.getItem("tns12.test")==="1"; }catch(e){}
+    on = !on;
+    try{ localStorage.setItem("tns12.test", on?"1":"0"); }catch(e){}
+    markTest();
+    if(on){ var btn=$("jbButton"); if(btn.className.indexOf("bad")===-1 || true){ setBtn("Re-Jailbreak!"); btn.disabled=false; } }
+  }
+  function expand(){
+    var p=$("panel"), r=$("jbButton").getBoundingClientRect(), q=p.getBoundingClientRect();
+    p.style.transition="none";
+    p.style.webkitTransform=p.style.transform="translate("+(r.left-q.left)+"px,"+(r.top-q.top)+"px) scale("+(r.width/q.width)+","+(r.height/q.height)+")";
+    p.offsetWidth; p.style.transition="";
+    p.className="tile go"; document.body.className="run";
+    p.style.webkitTransform=p.style.transform="none";
+  }
+  function collapse(){ $("panel").className="tile"; document.body.className=""; $("log").innerHTML=""; logN=0; $("log").style.webkitTransform=$("log").style.transform=""; }
+  var BYPASS_TYPES = ["AMFI","PAC","KTRR","KPP","PPL","KPF","APRR","AMCC","PAN","PXN","ASLR","OPA"]; // decorative only, from Dopamine's own simulateJailbreak demo
+  function rejb(){
+    var btn=$("jbButton"), testMode=false;
+    try{ testMode = localStorage.getItem("tns12.test")==="1"; }catch(e){}
+    setBtn("Jailbreaking..."); btn.disabled=true;
+    expand();
+    var failTimer = setTimeout(failJailbreak, 6500);
+    setTimeout(function(){ if(!PREVIEW && !testMode) pwn(); }, 100);
+    runFakeLog(failTimer);
+  }
+  function runFakeLog(failTimer){
+    function wait(ms,cb){ setTimeout(cb, ms); }
+    wait(200,function(){ showLog("Launching kexploitd");
+    wait(500,function(){ showLog("Launching oobPCI");
+    wait(150,function(){ showLog("Gaining r/w");
+    wait(800,function(){ showLog("Patchfinding");
+      var n=0, max=4+Math.floor(Math.random()*3);
+      (function nextBypass(){
+        if(n>=max){
+          wait(350,function(){
+            showLog("Rebooting Userspace");
+            wait(600,function(){ clearTimeout(failTimer); finishJailbreak(); });
+          });
+          return;
+        }
+        n++;
+        wait(150+Math.random()*450,function(){
+          showLog("Bypassing "+BYPASS_TYPES[Math.floor(Math.random()*BYPASS_TYPES.length)]);
+          nextBypass();
+        });
+      })();
+    });});});});
+  }
+  function finishJailbreak(){
+    showLog("Done");
+    $("log").lastChild.className="done";
+    setTimeout(function(){
+      setBtn("Jailbroken"); var b=$("jbButton"); b.className="tile ok"; b.disabled=true;
+      collapse();
+    }, 900);
+  }
+  function failJailbreak(){
+    showLog("Failed");
+    $("log").lastChild.className="fail";
+    setTimeout(function(){
+      setBtn("Jailbreak again?", false); $("jbButton").disabled=false;
+      collapse();
+    }, 900);
+  }
+  /* screens */
+  function openSheet(id){
+    var m=$("modal"), s=m.querySelectorAll(".sheet"), i;
+    for(i=0;i<s.length;i++) s[i].hidden = (s[i].id!==id);
+    m.className="on"; document.body.classList.add("dim");
+    m.offsetWidth; m.className="on show";
+  }
+  function closeSheet(e){
+    if(e && e.target!==$("modal")) return;
+    var m=$("modal"); m.className="on"; document.body.classList.remove("dim");
+    setTimeout(function(){ m.className=""; }, 450);
+  }
+  function toggleCredits(){ openSheet("credits"); }
+  function toggleTroubleshooting(){ openSheet("troubleshooting"); }
+  function toggleSettings(){ openSheet("settings"); }
+  function setTheme(t){
+    document.documentElement.setAttribute("data-theme", t);
+    try{ localStorage.setItem("tns12.theme", t); }catch(e){}
+    markTheme();
+  }
+  function markTheme(){
+    var t=document.documentElement.getAttribute("data-theme"), o=document.querySelectorAll(".opt"), i;
+    for(i=0;i<o.length;i++) o[i].className = "opt" + (o[i].getAttribute("data-t")===t ? " sel" : "");
+  }
   </script>
 </head>
 <body>
-  <header>
-    <h1>TotallyNotSpyware12</h1>
-    <h3>iOS 12.0 – 12.5.8 • A7 - A10X</h3>
-    <h5>Your device must already be jailbroken with Chimera to re-jailbreak.</h5>
-  </header>
-  <div class="center">
-  <section class="credits-card" onclick="toggleCredits()">
-    <h2>Credits</h2>
-    <ul class="credits-list expanded" id="creditsList">
-      <li>wh1te4ever <span class="role">(original developer)</span></li>
-      <li>alfiecg24 <span class="role">(stable kernel exploit)</span></li>
-      <li>felix-pb <span class="role">(kernel exploit)</span></li>
-      <li>Samuel Groß <span class="role">(CVE-2020-9802, WebKit exploit)</span></li>
-      <li>CoolStar and all Chimera jailbreak developers</li>
-      <li>JakeBlair420 and all TotallyNotSpyware developers</li>
-      <li>qwertyoruiop <span class="role">(Mach-O loader with +jitMemCpy)</span></li>
-      <li>forcequit <span class="role">(site and user experience improvements)</span></li>
-      <li class="note">If any contributors are missing, please let me know.</li>
-    </ul>
-  </section>
-  <section class="credits-card" onclick="toggleTroubleshooting()">
-    <h2>Troubleshooting</h2>
-    <ul class="credits-list expanded" id="troubleshootingList">
-      <li><strong>Manually reloading the web app</strong> • While in the web app, press and hold the Top/Side button until you reach the "slide to power off" screen, then press and hold the Home button until you reach the Home Screen.</li>
-      <li><strong>"A problem repeatedly occurred..."</strong> • If you're in Safari and this message appears while you're trying to rejailbreak, reload the page. If you've added the page to your Home Screen, and solely wish to jailbreak from there, see above to reload the web app, or restart your device.</li>
-      <li><strong>Device reboots to Apple logo after "Jailbreaking..." for a few seconds</strong> • Leave your device powered on and unlocked for ~30-60 seconds before retrying again, it may take multiple attempts to succeed.</li>
-      <li><strong>Failed, retry?</strong> • The re-jailbreak is failing for some reason. One possible cause for this can be that your device is already jailbroken. If retrying doesn't help, refresh the website, reload the web app, or restart your device.</li>
-      <li><strong>Device doesn't reflect updates to site</strong> • If you're using the web app, see earlier instructions to manually reload the web app, and/or reboot your device. If you're not, I probably didn't update the AppCache manifest. Go to Settings > Safari > Clear History and Website Data and it'll get new data from the server.</li>
-      <li><strong>Unable to remove problematic tweaks</strong> • If you can't remove any tweaks due to your device crashing when trying to reboot to a jailbroken state, you can disable tweak injection temporarily by setting the NVRAM <code>boot-args</code> variable to <code>-safe-mode</code> using either an SSH RAM disk, or the <code>irecovery</code> command line tool on a computer, with your device connected in Recovery mode. Please visit the GitHub page for further instructions.</li>
-      <li><strong>JavaScript Disabled</strong> • Go to Settings > Safari > Advanced, and toggle JavaScript on. If you're using a 3rd party web browser, check your browser's settings to enable JavaScript, or use the Safari instead.</li>
-      <li class="note">If you have a problem not mentioned here, please file a GitHub issue.</li>
-    </ul>
-  </section>
-  <a href="https://github.com/forcequitOS/TotallyNotSpyware12" target="_blank" rel="noopener noreferrer">Source Code</a>
-  <a href="https://github.com/wh1te4ever/totally-not-spyware-v2-release" target="_blank" rel="noopener noreferrer">Original Source Code</a>
-  <main class="action">
-    <button id="jbButton" onclick="rejb()" disabled>JavaScript Disabled</button>
-  </main>
+  <div id="bg"></div>
+  <div id="app"><div class="stack">
+    <div class="header">
+      <img src="assets/logo.png" alt="TotallyNotSpyware12">
+      <p>iOS 12.0 – 12.5.8 • A7 - A10X</p>
+      <p class="sub">by cursorus and Claude ♥</p>
+    </div>
+    <div class="menu tile">
+      <button class="row" onclick="toggleSettings()"><img src="assets/icons/settings.png" alt=""><span>Settings</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="row" onclick="toggleTroubleshooting()"><img src="assets/icons/troubleshooting.png" alt=""><span>Troubleshooting</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="row" onclick="toggleCredits()"><img src="assets/icons/credits.png" alt=""><span>Credits</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      <a class="row" href="https://github.com/forcequitOS/TotallyNotSpyware12" target="_blank" rel="noopener noreferrer"><img src="assets/icons/sourcecode.png" alt=""><span>Source Code</span></a>
+    </div>
+    <button id="jbButton" class="tile" onclick="rejb()" disabled>JavaScript Disabled</button>
+  </div></div>
+  <div class="foot">This is an unofficial modification, use at your own risk.</div>
+
+  <div id="panel" class="tile">
+    <div class="title"><div class="helix" id="helix"></div>Jailbreaking</div>
+    <div id="log"></div>
+    <div class="note">Keep your device unlocked and powered on.</div>
   </div>
-  <sub>This is an unofficial modification, use at your own risk.</sub>
+
+  <div id="modal" onclick="closeSheet(event)">
+    <section class="sheet" id="settings" hidden>
+      <h2>Settings</h2>
+      <div class="opt" data-t="dopamine" onclick="setTheme('dopamine')"><span>Dopamine</span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+      <div class="opt" data-t="ellekit" onclick="setTheme('ellekit')"><span>ElleKit</span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+      <div class="opt" onclick="toggleTest()"><span>Test Jailbreak</span><div class="sw" id="testSwitch"><i></i></div></div>
+      <p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.5)">Unlocks the button and plays the animation on any device, without actually jailbreaking.</p>
+    </section>
+    <section class="sheet" id="credits" hidden>
+      <h2>Credits</h2>
+      <ul id="creditsList">
+        <li><a href="https://github.com/wh1te4ever/totally-not-spyware-v2-release" target="_blank" rel="noopener noreferrer">wh1te4ever</a> <em>(original developer)</em></li>
+        <li>alfiecg24 <em>(stable kernel exploit)</em></li>
+        <li>felix-pb <em>(kernel exploit)</em></li>
+        <li>Samuel Groß <em>(CVE-2020-9802, WebKit exploit)</em></li>
+        <li>CoolStar and all Chimera jailbreak developers</li>
+        <li>JakeBlair420 and all TotallyNotSpyware developers</li>
+        <li>qwertyoruiop <em>(Mach-O loader with +jitMemCpy)</em></li>
+        <li>forcequit <em>(site and user experience improvements)</em></li>
+        <li>opa334 and tomt000 <em>(Dopamine, interface design, MIT license)</em></li>
+        <li>cursorus and Claude <em>(this redesign) ♥</em></li>
+        <li><small>If any contributors are missing, please let me know.</small></li>
+      </ul>
+    </section>
+    <section class="sheet" id="troubleshooting" hidden>
+      <h2>Troubleshooting</h2>
+      <ul id="troubleshootingList">
+        <li><b>Manually reloading the web app</b><br>While in the web app, press and hold the Top/Side button until you reach the "slide to power off" screen, then press and hold the Home button until you reach the Home Screen.</li>
+        <li><b>"A problem repeatedly occurred..."</b><br>If you're in Safari and this message appears while you're trying to rejailbreak, reload the page. If you've added the page to your Home Screen, and solely wish to jailbreak from there, reload the web app as above, or restart your device.</li>
+        <li><b>Device reboots to Apple logo after "Jailbreaking..." for a few seconds</b><br>Leave your device powered on and unlocked for ~30-60 seconds before retrying again, it may take multiple attempts to succeed.</li>
+        <li><b>Failed, retry?</b><br>The re-jailbreak is failing for some reason. One possible cause is that your device is already jailbroken. If retrying doesn't help, refresh the website, reload the web app, or restart your device.</li>
+        <li><b>Device doesn't reflect updates to site</b><br>If you're using the web app, reload it as above and/or reboot your device. If not, the AppCache manifest may not be updated. Go to Settings &gt; Safari &gt; Clear History and Website Data.</li>
+        <li><b>Unable to remove problematic tweaks</b><br>Disable tweak injection by setting the NVRAM <code>boot-args</code> variable to <code>-safe-mode</code> using an SSH RAM disk, or <code>irecovery</code> on a computer with your device in Recovery mode. See the GitHub page for instructions.</li>
+        <li><b>JavaScript Disabled</b><br>Go to Settings &gt; Safari &gt; Advanced, and toggle JavaScript on. In a 3rd party browser, enable JavaScript in its settings or use Safari.</li>
+        <li><small>If you have a problem not mentioned here, please file a GitHub issue.</small></li>
+      </ul>
+    </section>
+  </div>
 </body>
 </html>
