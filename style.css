@@ -4,9 +4,14 @@ html[data-theme="ellekit"]{--menu:rgba(97,12,113,.247);--win:rgba(9,4,10,.376);-
 @media (max-height:740px){:root{--row:65px;--stackh:78%}}
 @media (max-height:618px){:root{--row:52px;--pad:10px}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{margin:0;height:100%;background:#000;overflow:hidden;overscroll-behavior-y:none}
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
 body{color:#fff;font:500 14px -apple-system,'SF Pro',system-ui,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-#bg{position:fixed;left:-20px;right:-20px;top:-120px;bottom:-120px;width:auto;height:auto;display:block;border:0;object-fit:cover;object-position:50% 50%;transition:opacity .3s;-webkit-animation:drift 22s ease-in-out infinite alternate;animation:drift 22s ease-in-out infinite alternate}
+/* A real <img>, not a CSS background-image: some iOS 12 "dark mode" tweaks (e.g. Noctis) rewrite
+   background-image to black but leave actual <img> content alone. */
+#bg{position:fixed;left:-20px;top:-120px;width:calc(100% + 40px);height:calc(100% + 240px);
+    -o-object-fit:cover;object-fit:cover;-o-object-position:50% 50%;object-position:50% 50%;
+    display:block;border:0;transition:opacity .3s;
+    -webkit-animation:drift 22s ease-in-out infinite alternate;animation:drift 22s ease-in-out infinite alternate}
 @-webkit-keyframes drift{0%{object-position:40% 35%}100%{object-position:60% 65%}}
 @keyframes drift{0%{object-position:40% 35%}100%{object-position:60% 65%}}
 body.dim #bg{opacity:.4}

@@ -1,5 +1,6 @@
 CACHE MANIFEST
-# v2.0.3: Fix standalone PWA overscroll and restore core styling
+# v2.0.1: Corrected PWA launch URL for GitHub Pages
+# Updating this version invalidates the previously cached application shell.
 
 CACHE:
 index.html
