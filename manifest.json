@@ -6,7 +6,7 @@
   "background_color": "#3249e8",
   "display": "standalone",
   "orientation": "any",
-  "start_url": "/",
+  "start_url": "cursorus.github.io/notdopamine",
   "icons": [
     {
       "src": "/icons/icon-16x16.png",
