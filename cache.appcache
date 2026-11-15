@@ -1,6 +1,5 @@
 CACHE MANIFEST
-# v2.0.2: Cover the iOS standalone viewport during bounce
-# Updating this version invalidates the previously cached application shell.
+# v2.0.3: Fix standalone PWA overscroll and restore core styling
 
 CACHE:
 index.html
