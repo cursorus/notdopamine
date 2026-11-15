@@ -1,11 +1,12 @@
 /* TNS12 UI, layout and colors follow opa334/Dopamine (MIT). iOS 12 Safari safe: no flex gap, no inset, no aspect-ratio */
-html[data-theme="dopamine"]{--menu:rgba(63,63,63,.447);--win:rgba(76,76,76,.6);--shadow:none}
-html[data-theme="ellekit"]{--menu:rgba(97,12,113,.247);--win:rgba(9,4,10,.376);--shadow:drop-shadow(0 0 15px rgba(0,0,0,.3))}
+html[data-theme="dopamine"]{--menu:rgba(63,63,63,.447);--win:rgba(76,76,76,.6);--shadow:none;--bg-color:#1a3a1a}
+html[data-theme="ellekit"]{--menu:rgba(97,12,113,.247);--win:rgba(9,4,10,.376);--shadow:drop-shadow(0 0 15px rgba(0,0,0,.3));--bg-color:#0a0010}
+html{background:var(--bg-color,#111)}
 :root{--row:73px;--pad:5px;--stackh:73%;--ease:cubic-bezier(.22,1,.36,1)}
 @media (max-height:740px){:root{--row:65px;--stackh:78%}}
 @media (max-height:618px){:root{--row:52px;--pad:10px}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{margin:0;height:100%;background:#000;overflow:hidden}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden}
 body{color:#fff;font:500 14px -apple-system,'SF Pro',system-ui,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 /* A real <img>, not a CSS background-image: some iOS 12 "dark mode" tweaks (e.g. Noctis) rewrite
    background-image to black but leave actual <img> content alone. */
@@ -29,7 +30,7 @@ body.dim #app{opacity:.35}
 .row{position:relative;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;width:100%;height:var(--row);padding:0 10px;border:0;background:none;color:#fff;font:inherit;font-size:16px;text-align:left;text-decoration:none;cursor:pointer}
 .row+.row:before{content:"";position:absolute;left:10px;right:10px;top:0;height:1px;border-radius:.5px;background:rgba(153,153,153,.3)}
 .row:active{color:rgba(255,255,255,.75)}
-.row svg,.row img{width:14px;height:14px;margin-right:10px;-webkit-flex:none;flex:none;object-fit:contain}
+.row svg,.row img{width:20px;height:20px;margin-right:10px;-webkit-flex:none;flex:none;object-fit:contain}
 .row span{-webkit-flex:1;flex:1}
 .row .chev{width:16px;height:16px;margin:0;opacity:.6}
 #jbButton{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;width:100%;height:60px;border:0;color:#fff;font:600 16px -apple-system,'SF Pro',system-ui,Helvetica,sans-serif;transition:opacity .2s}
