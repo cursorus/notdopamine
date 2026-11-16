@@ -28,6 +28,13 @@
   function $(id){return document.getElementById(id)}
   var BG_SRC = {dopamine:"assets/bg-dopamine.jpg", ellekit:"assets/bg-ellekit.jpg"};
   function applyBg(){ var t=document.documentElement.getAttribute("data-theme")||"dopamine"; $("bg").src = BG_SRC[t] || BG_SRC.dopamine; }
+  // iOS Safari's address/toolbar can make the "real" visible height smaller than 100%/100vh,
+  // leaving a plain black gap below everything (the html background) — this keeps --vh pinned
+  // to the actual innerHeight instead.
+  function setVH(){ document.documentElement.style.setProperty("--vh", (window.innerHeight*0.01)+"px"); }
+  setVH();
+  window.addEventListener("resize", setVH);
+  window.addEventListener("orientationchange", function(){ setTimeout(setVH, 150); });
   // pwn.js may call log(). Kept empty on purpose so the exploit never races DOM work. Set window.LIVE_LOG=true to try the lyrics log.
   function log(msg){ if(window.LIVE_LOG) showLog(String(msg)); }
   var logN = 0, LOG_LINE=40;
@@ -75,9 +82,12 @@
     if(on){ setBtn("Jailbreak"); $("jbButton").disabled=false; }
   }
   function expand(){
-    var p=$("panel");
+    var p=$("panel"), r=$("jbButton").getBoundingClientRect(), q=p.getBoundingClientRect();
+    // #panel has transform-origin:0 0 (top-left) in CSS, so this translate+scale combo lines
+    // panel's top-left + size up EXACTLY with the button's, then animating to "none" grows it
+    // outward from the button's own rect — looks like the button itself turns into the panel.
     p.style.transition="none";
-    p.style.webkitTransform=p.style.transform="scale(.05)"; // grows from its own center, not from the button's corner
+    p.style.webkitTransform=p.style.transform="translate("+(r.left-q.left)+"px,"+(r.top-q.top)+"px) scale("+(r.width/q.width)+","+(r.height/q.height)+")";
     p.offsetWidth; p.style.transition="";
     p.className="tile go"; document.body.className="run";
     p.style.webkitTransform=p.style.transform="none";
@@ -213,6 +223,7 @@
       <div class="opt" data-t="ellekit" onclick="setTheme('ellekit')"><span>ElleKit</span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
       <div class="label">General</div>
       <div class="opt" onclick="respringTap()"><img src="assets/icons/respring.png" alt="" class="opt-icon"><span>Respring</span></div>
+      <p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,.5)">Needs Activator. No Activator? <a href="https://roooot.dev/respring.html" target="_blank" rel="noopener noreferrer">try this instead</a>.</p>
       <div class="opt" onclick="toggleTest()"><span>Test Jailbreak</span><div class="sw" id="testSwitch"><i></i></div></div>
       <p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.5)">Unlocks the button and plays the animation on any device, without actually jailbreaking. Resets when you leave the site.</p>
     </section>
