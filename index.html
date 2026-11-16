@@ -28,13 +28,7 @@
   function $(id){return document.getElementById(id)}
   var BG_SRC = {dopamine:"assets/bg-dopamine.jpg", ellekit:"assets/bg-ellekit.jpg"};
   function applyBg(){ var t=document.documentElement.getAttribute("data-theme")||"dopamine"; $("bg").src = BG_SRC[t] || BG_SRC.dopamine; }
-  // iOS Safari's address/toolbar can make the "real" visible height smaller than 100%/100vh,
-  // leaving a plain black gap below everything (the html background) — this keeps --vh pinned
-  // to the actual innerHeight instead.
-  function setVH(){ document.documentElement.style.setProperty("--vh", (window.innerHeight*0.01)+"px"); }
-  setVH();
-  window.addEventListener("resize", setVH);
-  window.addEventListener("orientationchange", function(){ setTimeout(setVH, 150); });
+
   // pwn.js may call log(). Kept empty on purpose so the exploit never races DOM work. Set window.LIVE_LOG=true to try the lyrics log.
   function log(msg){ if(window.LIVE_LOG) showLog(String(msg)); }
   var logN = 0, LOG_LINE=40;
