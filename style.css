@@ -6,11 +6,14 @@ html{background:var(--bg-color,#111)}
 @media (max-height:740px){:root{--row:65px;--stackh:78%}}
 @media (max-height:618px){:root{--row:52px;--pad:10px}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{margin:0;height:calc(var(--vh,1vh) * 100);background:transparent;overflow:hidden}
+/* height:100% fixes nothing in standalone (added-to-homescreen) mode — iOS reserves extra
+   space there that plain percentages don't see. -webkit-fill-available is the one that
+   actually resolves to the real visible screen in both regular Safari tabs and standalone. */
+html,body{margin:0;height:100%;height:calc(var(--vh,1vh) * 100);height:-webkit-fill-available;background:transparent;overflow:hidden}
 body{color:#fff;font:500 14px -apple-system,'SF Pro',system-ui,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 /* A real <img>, not a CSS background-image: some iOS 12 "dark mode" tweaks (e.g. Noctis) rewrite
    background-image to black but leave actual <img> content alone. */
-#bg{position:fixed;left:-20px;top:-120px;width:calc(100% + 40px);height:calc(var(--vh,1vh) * 100 + 240px);
+#bg{position:fixed;left:-20px;top:-120px;width:calc(100% + 40px);height:calc(var(--vh,1vh) * 100 + 240px);height:calc(-webkit-fill-available + 240px);
     -o-object-fit:cover;object-fit:cover;-o-object-position:50% 50%;object-position:50% 50%;
     display:block;border:0;transition:opacity .3s;
     -webkit-animation:drift 22s ease-in-out infinite alternate;animation:drift 22s ease-in-out infinite alternate}
