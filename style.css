@@ -6,11 +6,11 @@ html{background:var(--bg-color,#111)}
 @media (max-height:740px){:root{--row:65px;--stackh:78%}}
 @media (max-height:618px){:root{--row:52px;--pad:10px}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{margin:0;height:100%;background:transparent;overflow:hidden}
+html,body{margin:0;height:calc(var(--vh,1vh) * 100);background:transparent;overflow:hidden}
 body{color:#fff;font:500 14px -apple-system,'SF Pro',system-ui,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 /* A real <img>, not a CSS background-image: some iOS 12 "dark mode" tweaks (e.g. Noctis) rewrite
    background-image to black but leave actual <img> content alone. */
-#bg{position:fixed;left:-20px;top:-120px;width:calc(100% + 40px);height:calc(100% + 240px);
+#bg{position:fixed;left:-20px;top:-120px;width:calc(100% + 40px);height:calc(var(--vh,1vh) * 100 + 240px);
     -o-object-fit:cover;object-fit:cover;-o-object-position:50% 50%;object-position:50% 50%;
     display:block;border:0;transition:opacity .3s;
     -webkit-animation:drift 22s ease-in-out infinite alternate;animation:drift 22s ease-in-out infinite alternate}
@@ -34,13 +34,13 @@ body.dim #app{opacity:.35}
 .row span{-webkit-flex:1;flex:1}
 .row .chev{width:16px;height:16px;margin:0;opacity:.6}
 #jbButton{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;width:100%;height:60px;border:0;color:#fff;font:600 16px -apple-system,'SF Pro',system-ui,Helvetica,sans-serif;transition:opacity .2s}
-#jbButton:before{content:"";width:14px;height:14px;margin-right:10px;background:url(assets/icons/lock.png) center/contain no-repeat}
+#jbButton:before{content:"";width:20px;height:20px;margin-right:10px;background:url(assets/icons/lock.png) center/contain no-repeat}
 #jbButton.ok:before{background-image:url(assets/icons/unlock.png)}
 #jbButton.bad:before{background-image:url(assets/icons/locked.png)}
 #jbButton:active:not(:disabled){opacity:.75}
 #jbButton:disabled{opacity:.7}
 /* running state: panel grows out of the button */
-#panel{position:fixed;left:0;right:0;top:calc(26% + 35px);bottom:-100px;border-radius:14px 14px 0 0;opacity:0;pointer-events:none;will-change:transform}
+#panel{position:fixed;left:0;right:0;top:calc(26% + 35px);bottom:-100px;border-radius:14px 14px 0 0;opacity:0;pointer-events:none;will-change:transform;transform-origin:0 0}
 #panel.go{opacity:1;transition:-webkit-transform .75s var(--ease),transform .75s var(--ease),opacity .1s}
 .title{position:absolute;left:0;right:0;top:20px;display:-webkit-flex;display:flex;-webkit-justify-content:center;justify-content:center;-webkit-align-items:center;align-items:center;font-size:18px;font-weight:400;opacity:0;transition:opacity .2s .25s}
 .go .title,.go .note{opacity:1}
