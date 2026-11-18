@@ -1,17 +1,21 @@
 /* TNS12 UI, layout and colors follow opa334/Dopamine (MIT). iOS 12 Safari safe: no flex gap, no inset, no aspect-ratio */
 html[data-theme="dopamine"]{--menu:rgba(63,63,63,.447);--win:rgba(76,76,76,.6);--shadow:none;--bg-color:#1a3a1a}
 html[data-theme="ellekit"]{--menu:rgba(97,12,113,.247);--win:rgba(9,4,10,.376);--shadow:drop-shadow(0 0 15px rgba(0,0,0,.3));--bg-color:#0a0010}
-html{background:var(--bg-color,#111)}
 :root{--row:73px;--pad:5px;--stackh:73%;--ease:cubic-bezier(.22,1,.36,1)}
 @media (max-height:740px){:root{--row:65px;--stackh:78%}}
 @media (max-height:618px){:root{--row:52px;--pad:10px}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+/* html needs its OWN explicit height: body is position:fixed (taken out of normal flow, so it
+   gives html nothing to size itself from), and html had its background value declared twice
+   before (the 2nd, transparent, one was silently winning) — both bugs together are what made
+   everything outside the actually-rendered content area show as plain black instead of the
+   theme color, at any zoom level other than the lucky default one. */
+html{margin:0;height:100%;background:var(--bg-color,#111)}
 /* body is pinned to the real screen edges directly (not height:100%) — old WebKit can clip
    position:fixed children to body's OWN box when overflow:hidden is set on it, and if that box
    is sized by a percentage that comes out a bit short (which is exactly what kept happening in
    standalone/home-screen mode), everything anchored inside gets cut off at the same spot no
    matter how it's positioned. Anchoring body itself to the true viewport fixes it at the root. */
-html{margin:0;background:transparent}
 body{position:fixed;top:0;left:0;right:0;bottom:0;margin:0;overflow:hidden;background:transparent;
      color:#fff;font:500 14px -apple-system,'SF Pro',system-ui,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 /* A real <img>, not a CSS background-image: some iOS 12 "dark mode" tweaks (e.g. Noctis) rewrite
