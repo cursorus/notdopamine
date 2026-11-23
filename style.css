@@ -1,6 +1,6 @@
 /* TNS12 UI, layout and colors follow opa334/Dopamine (MIT). iOS 12 Safari safe: no flex gap, no inset, no aspect-ratio */
-html[data-theme="dopamine"]{--menu:rgba(63,63,63,.447);--win:rgba(76,76,76,.6);--shadow:none;--bg-color:#1a3a1a}
-html[data-theme="ellekit"]{--menu:rgba(97,12,113,.247);--win:rgba(9,4,10,.376);--shadow:drop-shadow(0 0 15px rgba(0,0,0,.3));--bg-color:#0a0010}
+html[data-theme="dopamine"]{--menu:rgba(63,63,63,.447);--win:rgba(76,76,76,.6);--shadow:none}
+html[data-theme="ellekit"]{--menu:rgba(97,12,113,.247);--win:rgba(9,4,10,.376);--shadow:drop-shadow(0 0 15px rgba(0,0,0,.3))}
 :root{--row:73px;--pad:5px;--stackh:73%;--ease:cubic-bezier(.22,1,.36,1)}
 @media (max-height:740px){:root{--row:65px;--stackh:78%}}
 @media (max-height:618px){:root{--row:52px;--pad:10px}}
@@ -9,8 +9,10 @@ html[data-theme="ellekit"]{--menu:rgba(97,12,113,.247);--win:rgba(9,4,10,.376);-
    gives html nothing to size itself from), and html had its background value declared twice
    before (the 2nd, transparent, one was silently winning) — both bugs together are what made
    everything outside the actually-rendered content area show as plain black instead of the
-   theme color, at any zoom level other than the lucky default one. */
-html{margin:0;height:100%;background:var(--bg-color,#111)}
+   theme color, at any zoom level other than the lucky default one.
+   Fallback is plain black (not a theme tint): any gap in coverage should read as black, like
+   the rest of a jailbreak/boot screen, not as a colored smear. */
+html{margin:0;height:100%;background:#000}
 /* body is pinned to the real screen edges directly (not height:100%) — old WebKit can clip
    position:fixed children to body's OWN box when overflow:hidden is set on it, and if that box
    is sized by a percentage that comes out a bit short (which is exactly what kept happening in
@@ -34,8 +36,11 @@ body.flash:before{content:"";position:fixed;left:0;right:0;top:0;bottom:0;backgr
 #app{position:fixed;left:0;right:0;top:0;bottom:0;padding:30px 30px 0;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:center;justify-content:center;transition:opacity .3s}
 body.dim #app{opacity:.35}
 .stack{height:var(--stackh);width:100%;max-width:600px;margin:0 auto;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:space-between;justify-content:space-between}
-.header{padding-left:5px;-webkit-filter:var(--shadow);filter:var(--shadow);transition:-webkit-transform .75s var(--ease),transform .75s var(--ease)}
-.header img{display:block;height:40px;width:auto;margin-bottom:2px}
+/* filter lives on the logo image, not this flex container: WebKit renders filter + transform on the
+   SAME animated element as garbled colored artifacts (the green smear on press) — splitting them
+   across parent (transform) and child (filter) avoids the combo entirely */
+.header{padding-left:5px;transition:-webkit-transform .75s var(--ease),transform .75s var(--ease)}
+.header img{display:block;height:40px;width:auto;margin-bottom:2px;-webkit-filter:var(--shadow);filter:var(--shadow)}
 .header p{margin:2px 0 0;font-size:14px;line-height:1.25}
 .header .sub{color:rgba(255,255,255,.6);font-weight:400}
 .tile{background:var(--menu);border-radius:14px}
